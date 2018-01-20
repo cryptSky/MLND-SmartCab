@@ -95,11 +95,14 @@ class Simulator(object):
                 if self.optimized: # Whether the user is optimizing the parameters and decay functions
                     self.log_filename = os.path.join("logs", "sim_improved-learning.csv")
                     self.table_filename = os.path.join("logs","sim_improved-learning.txt")
+                    self.failed_table_filename = os.path.join("logs","sim_improved-learning-failed.txt")
                 else: 
                     self.log_filename = os.path.join("logs", "sim_default-learning.csv")
                     self.table_filename = os.path.join("logs","sim_default-learning.txt")
+                    self.failed_table_filename = os.path.join("logs","sim_default-learning-failed.txt")
 
                 self.table_file = open(self.table_filename, 'wb')
+                self.failed_table = open(self.failed_table_filename, 'wb')
             else:
                 self.log_filename = os.path.join("logs", "sim_no-learning.csv")
             
@@ -219,6 +222,22 @@ class Simulator(object):
             else:
                 print "\nTrial Aborted!"
                 print "Agent did not reach the destination."
+				
+                if a.learning:
+					f = self.failed_table
+                
+					f.write("/-----------------------------------------\n")
+					f.write("| State-action rewards from Q-Learning\n")
+					f.write("\-----------------------------------------\n\n")
+	
+					for state in a.Q:
+						f.write("{}\n".format(state))
+						for action, reward in a.Q[state].iteritems():
+							f.write(" -- {} : {:.2f}\n".format(action, reward))
+						f.write("\n")  
+					
+				
+				
 
             # Increment
             total_trials = total_trials + 1
@@ -245,6 +264,8 @@ class Simulator(object):
 
         print "\nSimulation ended. . . "
 
+        self.failed_table.close()
+		
         # Report final metrics
         if self.display:
             self.pygame.display.quit()  # shut down pygame
